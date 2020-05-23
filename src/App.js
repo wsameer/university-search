@@ -1,8 +1,9 @@
 import React, { lazy, Suspense } from 'react';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
-import { Container, Row } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import './App.scss';
 
+const ScrollToTop = (lazy(() => import('./components/ScrollToTop')));
 const Home = (lazy(() => import('./pages/Home')));
 const BusyIndicator = (lazy(() => import('./components/BusyIndicator')));
 const TopNav = (lazy(() => import('./components/TopNav')));
@@ -30,6 +31,7 @@ const App = () => {
           <Container fluid className="main">
             {switchRoute}
           </Container>
+          <ScrollToTop />
         </Suspense>
       </Router>
     </div>
