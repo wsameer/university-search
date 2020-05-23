@@ -1,24 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { lazy, Suspense } from 'react';
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import { Container, Row } from 'react-bootstrap';
+import './App.scss';
 
-function App() {
+const Home = (lazy(() => import('./pages/Home')));
+const BusyIndicator = (lazy(() => import('./components/BusyIndicator')));
+const TopNav = (lazy(() => import('./components/TopNav')));
+
+const routes = [{ path: '/', component: Home }];
+
+const App = () => {
+  const switchRoute = (
+    <Switch>
+      {routes.map((route, index) => (
+        <Route
+          key={index}
+          exact
+          {...route}
+        />
+      ))}
+    </Switch>
+  );
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Router>
+        <Suspense fallback={<BusyIndicator />}>
+          <TopNav></TopNav>
+          <Container fluid className="main">
+            {switchRoute}
+          </Container>
+        </Suspense>
+      </Router>
     </div>
   );
 }

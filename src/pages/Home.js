@@ -1,0 +1,286 @@
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Button } from 'react-bootstrap';
+
+import ErrorAlert from '../components/ErrorAlert';
+import UniCard from '../components/UniCard';
+import Filters from '../components/Filters';
+import BusyIndicator from '../components/BusyIndicator';
+
+const LIMIT = 5;
+
+const Home = () => {
+
+  // All API end points
+  // const apiBasePath = 'https://uni-search-backend.herokuapp.com/api/universities';
+  const apiBasePath = 'http://localhost:8000/api/universities';
+  const getDomainsUrl = `${apiBasePath}/domains`;
+  const getCountryCodesUrl = `${apiBasePath}/countrycodes`;
+  const searchUnis = `${apiBasePath}/search`;
+
+  // store the search query string
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // store the meta data about the API result
+  const [metaData, setMetaData] = useState({
+    totalCount: 0,
+    limit: 0,
+    next: 0
+  });
+
+  // store all the domains
+  const [domains, setDomains] = useState([]);
+
+  // store all the country codes
+  const [countryCodes, setCountryCodes] = useState([]);
+
+  // store query result
+  const [universities, setUniversities] = useState([]);
+
+  // store error details
+  const [errorDetails, setErrorDetails] = useState(null);
+
+  // store the data loading flag
+  const [loading, setLoading] = useState(false);
+
+  // store the selected domain for filtering
+  const [selectedDomain, setSelectedDomain] = useState('All');
+
+  // store the selected country code for filtering
+  const [selectedCountryCode, setSelectedCountryCode] = useState('All');
+
+  // store the university name the user searched
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+  const handleCloseError = () => setErrorDetails(null);
+
+  const onLoadMore = () => {
+    /* here the query remains the same and we append the data */
+    console.log(`Pagination changed. Start index is ${metaData.next}`);
+    searchUniversities(searchQuery, false);
+  };
+
+  /**
+   * Whenever the search filters are changed
+   * @param {*} event 
+   */
+  const handleFiltersChange = (event) => {
+    const target = event.target.name;
+    switch (target) {
+      case 'domain':
+        setSelectedDomain(event.target.value);
+        break;
+
+      case 'code':
+        setSelectedCountryCode(event.target.value);
+        break;
+
+      case 'name':
+        const keyword = event.target.value.replace(/[^A-Za-z0-9 ]/g, '');
+        setSearchKeyword(keyword);
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  /**
+   * GET all unique domains (only end)
+   */
+  async function getAllDomains() {
+    const response = await fetch(getDomainsUrl);
+    if (response.status === 200) {
+      response
+        .json()
+        .then(res => setDomains((res.data).sort()))
+        .catch(err => setErrorDetails({ status: response.status, message: err }));
+
+    } else {
+      setErrorDetails({
+        status: response.status,
+        message: response.statusText
+      });
+    }
+  }
+
+  /**
+   * GET all unique country codes
+   */
+  async function getCountryCodes() {
+    const response = await fetch(getCountryCodesUrl);
+    if (response.status === 200) {
+      response
+        .json()
+        .then(res => setCountryCodes((res.data).sort()))
+        .catch(err => setErrorDetails({ status: response.status, message: err }));
+
+    } else {
+      setErrorDetails({
+        status: response.status,
+        message: response.statusText
+      });
+    }
+  }
+
+  /**
+   * Search the universities based on user's query
+   * @param {string} query    The parameter to the GET api call
+   * @param {boolean} replace Whether to replace the data or to append it
+   */
+  async function searchUniversities(query, replace = false) {
+    let startIndex = metaData.next ? metaData.next : 0;
+
+    // Forcefully set the startindex to 0 as we are replacing the whole data
+    if (replace) {
+      startIndex = 0;
+    }
+
+    query += `&limit=${LIMIT}&start=${startIndex}`;
+    console.log("Query is", query);
+
+    const response = await fetch(`${searchUnis}?${query}`);
+    if (response.status === 200) {
+      response
+        .json()
+        .then(res => {
+          setLoading(false);
+          setErrorDetails(false);
+
+          if (replace) {
+            setUniversities(res.data);
+          } else {
+            // apend result
+            setUniversities((prev) => [...universities, ...res.data]);
+          }
+
+          setMetaData({
+            totalCount: res.total_count,
+            limit: res.limit,
+            next: res.next
+          });
+        })
+        .catch(err => {
+          setLoading(false);
+          setErrorDetails({ status: 400, message: err });
+          setUniversities([]);
+        });
+    }
+    else {
+      setLoading(false);
+      setErrorDetails({
+        status: response.status,
+        message: response.message
+      });
+    }
+  }
+
+  /**
+   * One time thing - pre-fetch
+   */
+  useEffect(() => {
+    getAllDomains();
+    getCountryCodes();
+  }, []);
+
+  /**
+   * Runs everytime the filters are changed
+   */
+  useEffect(() => {
+    console.log(selectedDomain, selectedCountryCode, searchKeyword);
+
+    let queryString = `q=${encodeURIComponent(searchKeyword)}`;
+    if (selectedDomain !== 'All') {
+      queryString += `&domain=${encodeURIComponent(selectedDomain)}`;
+    }
+
+    if (selectedCountryCode !== 'All') {
+      queryString += `&code=${encodeURIComponent(selectedCountryCode)}`;
+    }
+
+    setSearchQuery(queryString);
+    searchUniversities(queryString, true);
+
+  }, [selectedDomain, selectedCountryCode, searchKeyword]);
+
+  if (loading) {
+    return <BusyIndicator />;
+  }
+
+  // Handle errors 
+  if (errorDetails) {
+    return (
+      <Col sm={12} md={{ span: 8, offset: 2 }}>
+        <ErrorAlert
+          error={errorDetails}
+          closeError={handleCloseError}
+        />
+      </Col>
+    );
+  }
+
+  // render data
+  return (
+    <>
+      <Row>
+        <Col sm={12} md={{ span: 6, offset: 3 }} className="text-center">
+          <Filters
+            domains={domains}
+            selectedDomain={selectedDomain}
+            countryCodes={countryCodes}
+            selectedCountryCode={selectedCountryCode}
+            searchKeyword={searchKeyword}
+            handleFiltersChange={handleFiltersChange}
+          />
+        </Col>
+      </Row>
+
+      <Row>
+        {universities && (
+          universities.length < 1
+            ? <p className="mt-4 text-center">No data found.</p>
+            : universities.map((university, index) => <UniCard key={index} data={university} />)
+        )}
+
+        <br />
+        {universities && (
+          <Col sm={12} className="text-center mb-3 mt-2">
+            <Button
+              className="load-more-btn"
+              onClick={() => onLoadMore()}>
+              Load more
+            </Button>
+          </Col>
+        )}
+      </Row>
+    </>
+  );
+};
+
+export default Home;
+
+
+// // TEST
+// async function getAllUniversities() {
+//   const response = await fetch(`${apiBasePath}/get`);
+//   if (response.status === 200) {
+//     response
+//       .json()
+//       .then(res => {
+//         setLoading(false);
+//         setErrorDetails(false);
+//         setUniversities(res.data);
+//       })
+//       .catch(err => {
+//         setLoading(false);
+//         setErrorDetails({ status: 400, message: err });
+//         setUniversities([]);
+//       });
+//   }
+//   else {
+//     setLoading(false);
+//     setErrorDetails({
+//       status: response.status,
+//       message: 'The page that you requested does not exist'
+//     });
+//   }
+// }

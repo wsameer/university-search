@@ -1,0 +1,156 @@
+/**
+ * VARIABLES
+ */
+$ebony        : #2d3035 !default;
+$black-russian: #22252a !default;
+$jade         : #00cd69 !default;
+$jade-lite    : #00cd6982 !default;
+$white        : #fff !default;
+
+$primary-color: $ebony;
+
+// Small tablets and large smartphones (landscape view)
+$screen-sm-min: 576px;
+
+// Small tablets (portrait view)
+$screen-md-min: 768px;
+
+// Tablets and small desktops
+$screen-lg-min: 992px;
+
+// Large tablets and desktops
+$screen-xl-min: 1200px;
+
+/** 
+  * MIXINS 
+  */
+// Small devices
+@mixin sm {
+  @media (min-width: #{$screen-sm-min}) {
+    @content;
+  }
+}
+
+// Medium devices
+@mixin md {
+  @media (min-width: #{$screen-md-min}) {
+    @content;
+  }
+}
+
+// Large devices
+@mixin lg {
+  @media (min-width: #{$screen-lg-min}) {
+    @content;
+  }
+}
+
+// Extra large devices
+@mixin xl {
+  @media (min-width: #{$screen-xl-min}) {
+    @content;
+  }
+}
+
+@mixin box-shadow($x, $y, $blur, $c) {
+  -webkit-box-shadow: $x $y $blur $c;
+  -moz-box-shadow   : $x $y $blur $c;
+  -ms-box-shadow    : $x $y $blur $c;
+  box-shadow        : $x $y $blur $c;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing : antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color       : $black-russian !important;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.btn {
+  outline: none;
+
+  &:focus,
+  &:active {
+    outline: none;
+  }
+}
+
+.btn-primary {
+  background-color: $black-russian !important;
+  border-color    : $jade !important;
+  color           : $jade !important;
+  outline         : none;
+}
+
+a {
+  color: $white !important;
+}
+
+.App {
+  background-color: $black-russian;
+  color           : $white;
+
+  .bg-dark {
+    background-color: $ebony;
+  }
+
+  .navbar {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  }
+
+  .main {
+    margin-top: 20px;
+    padding   : 0 35px;
+  }
+
+  .uni-card {
+    background-color: $primary-color;
+    color           : $white;
+    font-size       : 14px;
+    margin          : 15px 0;
+    height          : 400px;
+
+    .country-code {
+      margin       : 6px;
+      position     : absolute;
+      right        : 0;
+      font-weight  : bold;
+      padding      : 5px;
+      background   : $black-russian;
+      border-radius: 6px;
+      font-size    : 12px;
+    }
+
+    .card-img-top {
+      height    : 200px;
+      width     : 100%;
+      object-fit: cover;
+    }
+
+    .spinner-wrapper {
+      display        : flex;
+      justify-content: center;
+      align-items    : center;
+      height         : 100%;
+    }
+
+    .card-body {
+      padding: 10px;
+      min-height: 150px;
+
+      @include lg {
+        padding: 1.25rem;
+      }
+    }
+
+    .card-footer {}
+  }
+}
