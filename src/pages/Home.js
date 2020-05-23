@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Button } from 'react-bootstrap';
-
 import ErrorAlert from '../components/ErrorAlert';
 import UniCard from '../components/UniCard';
 import Filters from '../components/Filters';
 import BusyIndicator from '../components/BusyIndicator';
-
-const LIMIT = 5;
+import { LIMIT, API_BASE_URL_DEV, API_BASE_URL_PROD } from '../constants';
 
 const Home = () => {
 
   // All API end points
-  // const apiBasePath = 'https://uni-search-backend.herokuapp.com/api/universities';
-  const apiBasePath = 'http://localhost:8000/api/universities';
+  let apiBasePath;
+  if (process.env.NODE_ENV === 'development') {
+    apiBasePath = API_BASE_URL_DEV;
+  } else {
+    apiBasePath = API_BASE_URL_PROD;
+  }
+
   const getDomainsUrl = `${apiBasePath}/domains`;
   const getCountryCodesUrl = `${apiBasePath}/countrycodes`;
-  const searchUnis = `${apiBasePath}/search`;
+  const searchUniversitiesUrl = `${apiBasePath}/search`;
 
   // store the search query string
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,9 +26,11 @@ const Home = () => {
   // store the meta data about the API result
   const [metaData, setMetaData] = useState({
     totalCount: 0,
-    limit: 0,
+    limit: LIMIT,
     next: 0
   });
+
+  const [showLoadMore, setShowLoadMore] = useState(true);
 
   // store all the domains
   const [domains, setDomains] = useState([]);
@@ -57,9 +62,12 @@ const Home = () => {
    */
   const handleCloseError = () => setErrorDetails(null);
 
+  /**
+   * Handle the on load more button click event
+   * This fetched more records. Acts like a pagination.
+   */
   const onLoadMore = () => {
     /* here the query remains the same and we append the data */
-    console.log(`Pagination changed. Start index is ${metaData.next}`);
     searchUniversities(searchQuery, false);
   };
 
@@ -69,6 +77,7 @@ const Home = () => {
    */
   const handleFiltersChange = (event) => {
     const target = event.target.name;
+
     switch (target) {
       case 'domain':
         setSelectedDomain(event.target.value);
@@ -98,7 +107,6 @@ const Home = () => {
         .json()
         .then(res => setDomains((res.data).sort()))
         .catch(err => setErrorDetails({ status: response.status, message: err }));
-
     } else {
       setErrorDetails({
         status: response.status,
@@ -134,15 +142,17 @@ const Home = () => {
   async function searchUniversities(query, replace = false) {
     let startIndex = metaData.next ? metaData.next : 0;
 
+    setShowLoadMore(true);
+
     // Forcefully set the startindex to 0 as we are replacing the whole data
     if (replace) {
       startIndex = 0;
     }
 
     query += `&limit=${LIMIT}&start=${startIndex}`;
-    console.log("Query is", query);
+    // console.log("Query is", query);
 
-    const response = await fetch(`${searchUnis}?${query}`);
+    const response = await fetch(`${searchUniversitiesUrl}?${query}`);
     if (response.status === 200) {
       response
         .json()
@@ -151,10 +161,21 @@ const Home = () => {
           setErrorDetails(false);
 
           if (replace) {
+            // replace the data
             setUniversities(res.data);
           } else {
-            // apend result
+            // append to the data
             setUniversities((prev) => [...universities, ...res.data]);
+          }
+
+          /**
+           *  if the fetched result is less than the per page limit, 
+           *  then there is no point in showing the load more button
+           */
+          if (res.total_count <= res.limit && res.total_count < res.next) {
+            setShowLoadMore(false);
+          } else {
+            setShowLoadMore(true);
           }
 
           setMetaData({
@@ -164,12 +185,14 @@ const Home = () => {
           });
         })
         .catch(err => {
+          setShowLoadMore(false);
           setLoading(false);
           setErrorDetails({ status: 400, message: err });
           setUniversities([]);
         });
     }
     else {
+      setShowLoadMore(false);
       setLoading(false);
       setErrorDetails({
         status: response.status,
@@ -190,8 +213,7 @@ const Home = () => {
    * Runs everytime the filters are changed
    */
   useEffect(() => {
-    console.log(selectedDomain, selectedCountryCode, searchKeyword);
-
+    // console.log(selectedDomain, selectedCountryCode, searchKeyword);
     let queryString = `q=${encodeURIComponent(searchKeyword)}`;
     if (selectedDomain !== 'All') {
       queryString += `&domain=${encodeURIComponent(selectedDomain)}`;
@@ -205,6 +227,10 @@ const Home = () => {
     searchUniversities(queryString, true);
 
   }, [selectedDomain, selectedCountryCode, searchKeyword]);
+
+
+  ///////////////////
+
 
   if (loading) {
     return <BusyIndicator />;
@@ -246,7 +272,7 @@ const Home = () => {
         )}
 
         <br />
-        {universities && (
+        {showLoadMore && (
           <Col sm={12} className="text-center mb-3 mt-2">
             <Button
               className="load-more-btn"
@@ -261,30 +287,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
-// // TEST
-// async function getAllUniversities() {
-//   const response = await fetch(`${apiBasePath}/get`);
-//   if (response.status === 200) {
-//     response
-//       .json()
-//       .then(res => {
-//         setLoading(false);
-//         setErrorDetails(false);
-//         setUniversities(res.data);
-//       })
-//       .catch(err => {
-//         setLoading(false);
-//         setErrorDetails({ status: 400, message: err });
-//         setUniversities([]);
-//       });
-//   }
-//   else {
-//     setLoading(false);
-//     setErrorDetails({
-//       status: response.status,
-//       message: 'The page that you requested does not exist'
-//     });
-//   }
-// }

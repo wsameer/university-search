@@ -1,16 +1,35 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Form, Row, Col } from 'react-bootstrap';
+import { Form, Col } from 'react-bootstrap';
 
 const Filters = (props) => {
 
+  const {
+    handleFiltersChange,
+    selectedCountryCode,
+    searchKeyword,
+    countryCodes,
+    selectedDomain,
+    domains
+  } = props;
+
+  // to locally store the keyword while the user is typing
   const [keyword, setKeyword] = useState('');
 
+  /**
+   * update the keyword while the user is typing
+   * @param {object} event The DOM event
+   */
   const onInputChange = (event) => setKeyword(event.target.value);
 
+  /**
+   * To handle the enter key press event signalling that the 
+   * user has completed typing and wants data
+   * @param {object} event The DOM event
+   */
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      return props.handleFiltersChange(event)
+      return handleFiltersChange(event)
     }
   };
 
@@ -31,10 +50,10 @@ const Filters = (props) => {
         <Form.Control
           as="select"
           name="code"
-          value={props.selectedCountryCode}
-          onChange={(event) => props.handleFiltersChange(event)}>
+          value={selectedCountryCode}
+          onChange={(event) => handleFiltersChange(event)}>
           <option>All</option>
-          {props.countryCodes.map((code, index) => <option key={index}>{code}</option>)}
+          {countryCodes.map((code, index) => <option key={index}>{code}</option>)}
         </Form.Control>
       </Form.Group>
 
@@ -42,10 +61,10 @@ const Filters = (props) => {
         <Form.Control
           as="select"
           name="domain"
-          value={props.selectedDomain}
-          onChange={(event) => props.handleFiltersChange(event)}>
+          value={selectedDomain}
+          onChange={(event) => (event)}>
           <option>All</option>
-          {props.domains.map((domain, index) => <option key={index}>{domain}</option>)}
+          {domains.map((domain, index) => <option key={index}>{domain}</option>)}
         </Form.Control>
       </Form.Group>
     </Form.Row>

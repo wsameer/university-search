@@ -2,11 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Col, Card, Spinner, Alert } from 'react-bootstrap';
 import UniTitle from './UniTitle';
+import { RANDOM_IMAGE } from '../constants';
 
 const UniCardWithError = ({ data, errors }) => {
-
-  const randomImage = "https://picsum.photos/300/200/";
-
   return (
     <Col sm={4}>
       <Card className="uni-card">
@@ -16,15 +14,16 @@ const UniCardWithError = ({ data, errors }) => {
               <div className="country-code">
                 {data.alpha_two_code}
               </div>
-              <Card.Img variant="top" src={randomImage} />
+              <Card.Img variant="top" src={RANDOM_IMAGE} />
               <Card.Body>
                 <Card.Title>
                   <UniTitle title={data.name} />
                 </Card.Title>
                 <Alert variant="danger">
-                  <strong>[{errors.status}]: {errors.message}</strong>
-                  <br />
-                  <small className="mb-1">
+                  <strong className="d-none d-md-block">
+                    [{errors.status}]: {errors.message}
+                  </strong>
+                  <small className="mb-2">
                     <strong>{data.web_page}</strong>'s server IP address could not be found.
                   </small>
                 </Alert>
@@ -42,8 +41,8 @@ const UniCardWithError = ({ data, errors }) => {
 }
 
 UniCardWithError.propTypes = {
-  data: PropTypes.object,
-  errors: PropTypes.object
+  data: PropTypes.object.isRequired,
+  errors: PropTypes.object.isRequired
 };
 
 export default UniCardWithError
