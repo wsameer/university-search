@@ -51,6 +51,10 @@ const Home = () => {
   // store the university name the user searched
   const [searchKeyword, setSearchKeyword] = useState('');
 
+  /**
+   * Handle the Error message close event.
+   * This removes the error message from the UI
+   */
   const handleCloseError = () => setErrorDetails(null);
 
   const onLoadMore = () => {
@@ -60,8 +64,8 @@ const Home = () => {
   };
 
   /**
-   * Whenever the search filters are changed
-   * @param {*} event 
+   * Handle the filter change event
+   * @param {*} event DOM event object
    */
   const handleFiltersChange = (event) => {
     const target = event.target.name;
@@ -79,7 +83,7 @@ const Home = () => {
         setSearchKeyword(keyword);
         break;
 
-      default:
+      default: // do nothing
         break;
     }
   };
