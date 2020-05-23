@@ -116,7 +116,11 @@ a {
     color           : $white;
     font-size       : 14px;
     margin          : 15px 0;
-    height          : 400px;
+    height          : 330px;
+
+    @include md {
+      height: 400px;
+    }
 
     .country-code {
       margin       : 6px;
@@ -130,9 +134,13 @@ a {
     }
 
     .card-img-top {
-      height    : 200px;
+      height    : 150px;
       width     : 100%;
       object-fit: cover;
+
+      @include md {
+        height: 200px;
+      }
     }
 
     .spinner-wrapper {
@@ -143,11 +151,28 @@ a {
     }
 
     .card-body {
-      padding: 10px;
-      min-height: 150px;
+      padding   : 10px;
+      min-height: 100px;
 
       @include lg {
-        padding: 1.25rem;
+        padding   : 1.25rem;
+        min-height: 150px;
+      }
+
+      .card-title {
+        font-size: 16px !important;
+
+        @include md {
+          font-size: 1.25rem;
+        }
+      }
+
+      .card-subtitle {
+        font-size: 14px;
+
+        @include md {
+          font-size: 1rem;
+        }
       }
     }
 
