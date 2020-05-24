@@ -149,40 +149,50 @@ const Home = () => {
       startIndex = 0;
     }
 
+    // form the query
     query += `&limit=${LIMIT}&start=${startIndex}`;
-    // console.log("Query is", query);
-
     const response = await fetch(`${searchUniversitiesUrl}?${query}`);
+
     if (response.status === 200) {
       response
         .json()
         .then(res => {
           setLoading(false);
-          setErrorDetails(false);
 
-          if (replace) {
-            // replace the data
-            setUniversities(res.data);
-          } else {
-            // append to the data
-            setUniversities((prev) => [...universities, ...res.data]);
+          if (res.data) {
+            setErrorDetails(false);
+            if (replace) {
+              // replace the data
+              setUniversities(res.data);
+            } else {
+              // append to the data
+              setUniversities((prev) => [...universities, ...res.data]);
+            }
+
+            /**
+             *  if the fetched result is less than the per page limit, 
+             *  then there is no point in showing the load more button
+             */
+            if (res.total_count <= res.limit || res.total_count < res.next) {
+              setShowLoadMore(false);
+            } else {
+              setShowLoadMore(true);
+            }
+
+            // this is to catch the pagination out of bounds exception.
+            return setMetaData({
+              totalCount: res.total_count,
+              limit: res.limit,
+              next: res.next
+            });
           }
 
-          /**
-           *  if the fetched result is less than the per page limit, 
-           *  then there is no point in showing the load more button
-           */
-          if (res.total_count <= res.limit && res.total_count < res.next) {
-            setShowLoadMore(false);
-          } else {
-            setShowLoadMore(true);
-          }
-
-          setMetaData({
-            totalCount: res.total_count,
-            limit: res.limit,
-            next: res.next
+          setShowLoadMore(false);
+          setErrorDetails({
+            status: 200,
+            message: res.message
           });
+
         })
         .catch(err => {
           setShowLoadMore(false);
