@@ -142,7 +142,7 @@ const Home = () => {
   async function searchUniversities(query, replace = false) {
     let startIndex = metaData.next ? metaData.next : 0;
 
-    setShowLoadMore(true);
+    setShowLoadMore(false);
 
     // Forcefully set the startindex to 0 as we are replacing the whole data
     if (replace) {

@@ -7,7 +7,6 @@ const Filters = (props) => {
   const {
     handleFiltersChange,
     selectedCountryCode,
-    searchKeyword,
     countryCodes,
     selectedDomain,
     domains
@@ -62,7 +61,7 @@ const Filters = (props) => {
           as="select"
           name="domain"
           value={selectedDomain}
-          onChange={(event) => (event)}>
+          onChange={(event) => handleFiltersChange(event)}>
           <option>All</option>
           {domains.map((domain, index) => <option key={index}>{domain}</option>)}
         </Form.Control>
@@ -76,7 +75,6 @@ Filters.propTypes = {
   selectedDomain: PropTypes.string.isRequired,
   countryCodes: PropTypes.array.isRequired,
   selectedCountryCode: PropTypes.string.isRequired,
-  searchKeyword: PropTypes.string.isRequired,
   handleFiltersChange: PropTypes.func.isRequired,
 };
 
